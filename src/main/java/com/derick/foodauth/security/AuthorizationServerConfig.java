@@ -69,4 +69,28 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         security.checkTokenAccess("permitAll()");
     }
 
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+        endpoints
+                .authenticationManager(authenticationManager)
+                .userDetailsService(userDetailsService)
+                .reuseRefreshTokens(false)
+                .tokenStore(redisTokenStore())
+                .tokenGranter(tokenGranter(endpoints));
+    }
+
+    private TokenGranter tokenGranter(AuthorizationServerEndpointsConfigurer endpoints) {
+        var pkceAuthorizationCodeTokenGranter = new PkceAuthorizationCodeTokenGranter(endpoints.getTokenServices(),
+                endpoints.getAuthorizationCodeServices(), endpoints.getClientDetailsService(),
+                endpoints.getOAuth2RequestFactory());
+
+        var granters = Arrays.asList(
+                pkceAuthorizationCodeTokenGranter, endpoints.getTokenGranter());
+
+        return new CompositeTokenGranter(granters);
+    }
+
+    private TokenStore redisTokenStore(){
+        return new RedisTokenStore(redisConnectionFactory);
+    }
 }
