@@ -1,4 +1,4 @@
-package com.derick.foodauth.security;
+package com.derick.foodauth.core;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
