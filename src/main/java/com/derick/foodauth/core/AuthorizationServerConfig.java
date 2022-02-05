@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 
+import javax.sql.DataSource;
 import java.util.Arrays;
 
 @Configuration
@@ -39,33 +40,12 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Autowired
     private JwtKeyStoreProperties jwtKeyStoreProperties;
 
+    @Autowired
+    private DataSource dataSource;
+
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients
-                .inMemory()
-                .withClient("food-web")
-                .secret(passwordEncoder.encode("web123"))
-                .authorizedGrantTypes("password", "refresh_token")
-                .scopes("WRITE", "READ")
-                .accessTokenValiditySeconds(60 * 60 * 6)
-                .refreshTokenValiditySeconds(60 * 24 * 60 * 1)
-
-                .and()
-                .withClient("food")
-                .secret(passwordEncoder.encode("web123"))
-                .authorizedGrantTypes("client_credentials")
-                .scopes("WRITE", "READ")
-
-                .and()
-                .withClient("foodanalytics")
-                .secret(passwordEncoder.encode("web123"))
-                .authorizedGrantTypes("authorization_code")
-                .scopes("WRITE", "READ")
-                .redirectUris("http://teste")
-
-                .and()
-                .withClient("checktoken")
-                .secret(passwordEncoder.encode("check123"));
+        clients.jdbc(dataSource);
     }
 
     @Override
